@@ -1,94 +1,87 @@
+// Theme toggling
 document.addEventListener('DOMContentLoaded', () => {
-    const navbar = document.querySelector('.navbar');
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn') || (() => {
-        const btn = document.createElement('button');
-        btn.className = 'mobile-menu-btn';
-        btn.innerHTML = `<span></span><span></span><span></span>`;
-        navbar.querySelector('.nav-content').appendChild(btn);
-        return btn;
-    })();
-    const navLinks = document.querySelector('.nav-links');
-    const allNavLinks = document.querySelectorAll('.nav-links a');
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const icon = themeToggle.querySelector('i');
 
-    // Navbar scroll effect
-    const handleNavbarScroll = () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleNavbarScroll);
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        body.setAttribute('data-theme', savedTheme);
+        icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
 
-    // Mobile menu toggle
-    mobileMenuBtn.addEventListener('click', () => {
-        const isActive = navLinks.classList.toggle('active');
-        mobileMenuBtn.classList.toggle('active');
-        document.body.style.overflow = isActive ? 'hidden' : '';
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        body.setAttribute('data-theme', newTheme);
+        icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        
+        localStorage.setItem('theme', newTheme);
     });
+});
 
-    // Close mobile menu
-    const closeMobileMenu = () => {
-        navLinks.classList.remove('active');
-        mobileMenuBtn.classList.remove('active');
-        document.body.style.overflow = '';
-    };
-    allNavLinks.forEach(link => link.addEventListener('click', closeMobileMenu));
-    document.addEventListener('click', (e) => {
-        if (!navLinks.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-            closeMobileMenu();
-        }
-    });
-
-    // Highlight active link
+document.addEventListener('DOMContentLoaded', () => {
+    // Add active class to sidebar links based on scroll position
     const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.sidebar-nav a');
+
     window.addEventListener('scroll', () => {
         let current = '';
+        
         sections.forEach(section => {
-            if (window.pageYOffset >= section.offsetTop - 100) {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            if (scrollY >= (sectionTop - sectionHeight / 3)) {
                 current = section.getAttribute('id');
             }
         });
-        allNavLinks.forEach(link => {
-            link.classList.toggle('active', link.getAttribute('href').substring(1) === current);
-        });
-    });
 
-    // Scroll-triggered animations
-    const scrollAnimations = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                scrollAnimations.unobserve(entry.target);
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) {
+                link.classList.add('active');
             }
         });
-    }, { threshold: 0.2 });
-
-    // Add observer to elements with animation classes
-    document.querySelectorAll('.fade-up, .slide-in-left, .slide-in-right, .scale-in').forEach(element => {
-        scrollAnimations.observe(element);
     });
 
-    // Project card hover effect
-    document.querySelectorAll('.project-card').forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            card.style.transform = 'translateY(-10px) scale(1.02)';
-        });
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-
-    // Typewriter effect
-    const heroTitle = document.querySelector('.hero-content h1');
-    if (heroTitle) {
-        const text = heroTitle.textContent;
-        heroTitle.textContent = '';
-        let i = 0;
-        const typeWriter = () => {
-            if (i < text.length) {
-                heroTitle.textContent += text.charAt(i++);
-                setTimeout(typeWriter, 100);
+    // Smooth scrolling
+    document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
             }
-        };
-        new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) typeWriter();
-        }).observe(heroTitle);
-    }
+        });
+    });
+});
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            // Close sidebar on mobile after clicking a link
+            if (window.innerWidth <= 768) {
+                document.querySelector('.sidebar').classList.remove('active');
+            }
+        }
+    });
+});
+
+// Form submission handling
+document.querySelector('.contact-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // Add your form submission logic here
+    console.log('Form submitted');
 });
